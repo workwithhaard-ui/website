@@ -1,24 +1,39 @@
-function sendMail(){
-  let parms ={
-      firstName : document.getElementById("firstName").value,
-      lastName : document.getElementById("lastName").value,
-      email : document.getElementById("email").value,
-      service : document.getElementById("service").value,
-      phone : document.getElementById("phone").value,
-      message : document.getElementById("message").value,    
+document.getElementById("contactForm").addEventListener("submit", function (e) {
+  e.preventDefault();
 
+  // Get form data
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData);
+
+  // Simple validation
+  if (!data.firstName || !data.lastName || !data.email || !data.message || !data.service || !data.phone) {
+    showNotification("Please fill in all required fields.", "error");
+    return;
   }
-  emailjs.send("service_wt57xgj","template_q82",parms).then(alert("Email Sent!!"))
+
+  // Email validation
+  const emailRegex = /^[^\s@]+@gmail.com$/; // Only allow Gmail addresses
+  if (!emailRegex.test(data.email)) {
+    showNotification("Please enter a valid gmail address.", "error");
+    return;
+  }
+
+  // Phone validation
+  if (!/^\d{10}$/.test(data.phone)) {
+    showNotification("Please enter a valid phone number (10 digits).", "error");
+    return;
+  }
+
+  // Call sendMail with validated data
+  sendMail(data);
+});
+// ...existing code...
+
+function sendMail(parms){
+  emailjs.send("service_wt57xgj","template_q82",parms)
+    .then(() => showNotification("Email Sent!!", "success"))
+    .catch(() => showNotification("Failed to send email.", "error"));
 }
-
-
-
-
-
-
-
-
-
 
 // Mobile Navigation Toggle
 const navToggle = document.querySelector(".nav-toggle")
@@ -123,44 +138,6 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll(".service-card, .about-item, .about-stats, .contact-item").forEach((el) => {
   el.classList.add("scroll-animate")
   observer.observe(el)
-})
-
-// Contact Form Handling
-document.getElementById("contactForm").addEventListener("submit", function (e) {
-  e.preventDefault()
-
-  // Get form data
-  const formData = new FormData(this)
-  const data = Object.fromEntries(formData)
-
-  // Simple validation
-  if (!data.firstName || !data.lastName || !data.email || !data.message) {
-    showNotification("Please fill in all required fields.", "error")
-    return
-  }
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(data.email)) {
-    showNotification("Please enter a valid email address.", "error")
-    return
-  }
-
-  // Simulate form submission
-  const submitBtn = this.querySelector('button[type="submit"]')
-  const originalText = submitBtn.textContent
-
-  submitBtn.textContent = "Sending..."
-  submitBtn.disabled = true
-  submitBtn.classList.add("loading")
-
-  setTimeout(() => {
-    showNotification("Thank you for your message! We will get back to you soon.", "success")
-    this.reset()
-    submitBtn.textContent = originalText
-    submitBtn.disabled = false
-    submitBtn.classList.remove("loading")
-  }, 2000)
 })
 
 // Notification System
@@ -711,5 +688,15 @@ if (servicesSection) {
 
   servicesObserver.observe(servicesSection)
 }
+
+document.fonts.ready.then(() => {
+  document.querySelectorAll('.marquee-row').forEach(row => {
+    const speed = parseInt(row.dataset.speed, 10);
+    const content = row.querySelector('.marquee-content');
+    const duration = content.offsetWidth / speed + 10;
+    content.style.animationDuration = duration + 's';
+  });
+});
+
 
 console.log("🎨 Dhwam Barcode Systems website loaded successfully!")
