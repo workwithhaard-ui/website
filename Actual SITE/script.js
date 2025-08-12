@@ -1,36 +1,60 @@
 document.getElementById("contactForm").addEventListener("submit", function (e) {
-  e.preventDefault();
+    e.preventDefault(); // Prevent the default page reload
 
-  // Get form data
-  const formData = new FormData(this);
-  const data = Object.fromEntries(formData);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
 
-  // Simple validation
-  if (!data.firstName || !data.lastName || !data.email || !data.message || !data.service || !data.phone) {
-    showNotification("Please fill in all required fields.", "error");
-    return;
-  }
+    // --- 1. Get Form Data ---
+    const params = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        service: document.getElementById("service").value,
+        message: document.getElementById("message").value,
+    };
 
-  // Email validation
-  const emailRegex = /^[^\s@]+@gmail.com$/; // Only allow Gmail addresses
-  if (!emailRegex.test(data.email)) {
-    showNotification("Please enter a valid gmail address.", "error");
-    return;
-  }
+    // --- 2. Validation ---
+    if (!params.firstName || !params.lastName || !params.email || !params.message || !params.service || !params.phone) {
+        showNotification("Please fill in all required fields.", "error");
+        return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Standard email validation
+    if (!emailRegex.test(params.email)) {
+        showNotification("Please enter a valid email address.", "error");
+        return;
+    }
+    if (!/^\d{10}$/.test(params.phone)) {
+        showNotification("Please enter a valid 10-digit phone number.", "error");
+        return;
+    }
 
-  // Phone validation
-  if (!/^\d{10}$/.test(data.phone)) {
-    showNotification("Please enter a valid phone number (10 digits).", "error");
-    return;
-  }
+    // --- 3. Show Loading State ---
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
 
-  // Call sendMail with validated data
-  sendMail(data);
+    // --- 4. Send Email with EmailJS ---
+    // FIXED: Corrected the template ID and added detailed error handling.
+    // Ensure 'service_wt57xgj' and 'template_q82' match your EmailJS account.
+    emailjs.send("service_wt57xgj", "template_q82", params)
+        .then((res) => {
+            showNotification("Email Sent Successfully!", "success");
+            document.getElementById("contactForm").reset(); // Clear the form on success
+        })
+        .catch((err) => {
+            // Log the detailed error to the console for debugging
+            console.error("EmailJS Error:", err);
+            showNotification("Failed to send email. Please try again.", "error");
+        })
+        .finally(() => {
+            // ALWAYS runs: Restore the button after success or failure
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        });
 });
-// ...existing code...
 
 function sendMail(parms){
-  emailjs.send("service_wt57xgj","template_h544999",parms)
+  emailjs.send("service_wt57xgj","template_q82",parms)
     .then(() => showNotification("Email Sent!!", "success"))
     .catch(() => showNotification("Failed to send email.", "error"));
 }
