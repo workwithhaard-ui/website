@@ -30,7 +30,7 @@ document.getElementById("contactForm").addEventListener("submit", function (e) {
 // ...existing code...
 
 function sendMail(parms){
-  emailjs.send("service_wt57xgj","template_q82",parms)
+  emailjs.send("service_wt57xgj","template_h544999",parms)
     .then(() => showNotification("Email Sent!!", "success"))
     .catch(() => showNotification("Failed to send email.", "error"));
 }
